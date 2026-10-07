@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,238 +10,188 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # =========================================================
 
 st.set_page_config(
-    page_title="기온 예측기 | 다항회귀 탐구",
+    page_title="기온 예측기",
     page_icon="🌡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # =========================================================
-# CSS
+# 디자인
 # =========================================================
 
 st.markdown("""
 <style>
 
-    /* ---------- 전체 ---------- */
+.stApp {
+    background-color: #f8fafc;
+}
 
-    .stApp {
-        background:
-            linear-gradient(
-                180deg,
-                #f8fbff 0%,
-                #f4f7fb 100%
-            );
-    }
+.block-container {
+    max-width: 1350px;
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+}
 
-    .block-container {
-        max-width: 1450px;
-        padding-top: 2rem;
-        padding-bottom: 4rem;
-    }
+/* 제목 */
+.title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #172033;
+    margin-bottom: 0.2rem;
+}
 
-    /* ---------- Header ---------- */
+.subtitle {
+    font-size: 1.05rem;
+    color: #667085;
+    margin-bottom: 1.5rem;
+}
 
-    .hero {
-        background:
-            linear-gradient(
-                135deg,
-                #102a43 0%,
-                #1d4e89 55%,
-                #3b82c4 100%
-            );
-        border-radius: 24px;
-        padding: 2.4rem 2.6rem;
-        margin-bottom: 1.6rem;
-        color: white;
-        box-shadow: 0 12px 35px rgba(16, 42, 67, 0.18);
-    }
+/* 단계 */
+.step {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    padding: 1rem;
+    text-align: center;
+    height: 100%;
+}
 
-    .hero-title {
-        font-size: 3rem;
-        font-weight: 850;
-        line-height: 1.15;
-        margin-bottom: 0.5rem;
-    }
+.step-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #3b82f6;
+}
 
-    .hero-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        line-height: 1.7;
-        max-width: 850px;
-    }
+.step-title {
+    font-weight: 700;
+    color: #172033;
+    margin-top: 0.2rem;
+}
 
-    .hero-badge {
-        display: inline-block;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.15);
-        font-size: 0.82rem;
-        margin-bottom: 1rem;
-    }
+.step-text {
+    color: #667085;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+}
 
-    /* ---------- Section ---------- */
+/* 카드 */
+.card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.2rem;
+    height: 100%;
+}
 
-    .section {
-        font-size: 1.55rem;
-        font-weight: 800;
-        color: #172b4d;
-        margin-top: 2rem;
-        margin-bottom: 0.8rem;
-    }
+.card-label {
+    color: #667085;
+    font-size: 0.85rem;
+}
 
-    .section-note {
-        color: #667085;
-        margin-bottom: 1rem;
-    }
+.card-value {
+    color: #172033;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-top: 0.2rem;
+}
 
-    /* ---------- Cards ---------- */
+.card-help {
+    color: #98a2b3;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+}
 
-    .card {
-        background: white;
-        border: 1px solid #e4eaf2;
-        border-radius: 18px;
-        padding: 1.25rem;
-        height: 100%;
-        box-shadow: 0 4px 16px rgba(16, 42, 67, 0.045);
-    }
+/* 모델 카드 */
+.model {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 1.3rem;
+    text-align: center;
+    height: 100%;
+}
 
-    .card-label {
-        color: #667085;
-        font-size: 0.88rem;
-        font-weight: 650;
-        margin-bottom: 0.45rem;
-    }
+.model-best {
+    border-color: #3b82f6;
+    background: #f0f7ff;
+}
 
-    .card-value {
-        color: #102a43;
-        font-size: 1.85rem;
-        font-weight: 850;
-    }
+.model-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #172033;
+}
 
-    .card-sub {
-        color: #98a2b3;
-        font-size: 0.82rem;
-        margin-top: 0.35rem;
-    }
+.model-description {
+    color: #667085;
+    font-size: 0.85rem;
+    margin: 0.3rem 0 0.8rem;
+}
 
-    /* ---------- Model cards ---------- */
+.model-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #172033;
+}
 
-    .model-card {
-        background: white;
-        border-radius: 18px;
-        padding: 1.4rem;
-        border: 1px solid #e4eaf2;
-        min-height: 185px;
-        box-shadow: 0 4px 16px rgba(16,42,67,0.045);
-    }
+.model-unit {
+    font-size: 0.85rem;
+    color: #667085;
+}
 
-    .model-card.best {
-        border: 2px solid #3b82c4;
-        box-shadow: 0 8px 24px rgba(59,130,196,0.13);
-    }
+.badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
 
-    .model-tag {
-        font-size: 0.82rem;
-        font-weight: 750;
-        color: #667085;
-    }
+/* 설명 */
+.look-box {
+    background: #eef6ff;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0 1.2rem;
+    color: #29415c;
+}
 
-    .model-title {
-        font-size: 1.35rem;
-        font-weight: 850;
-        color: #102a43;
-        margin: 0.35rem 0 0.8rem 0;
-    }
+.warning-box {
+    background: #fff8e6;
+    border: 1px solid #f0d27a;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    color: #624d0b;
+    margin-top: 1rem;
+}
 
-    .model-number {
-        font-size: 2rem;
-        font-weight: 850;
-        color: #172b4d;
-    }
+/* 섹션 */
+.section-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #172033;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+}
 
-    .model-unit {
-        font-size: 0.9rem;
-        color: #667085;
-    }
-
-    .best-label {
-        display: inline-block;
-        background: #e8f3ff;
-        color: #1769aa;
-        padding: 0.25rem 0.55rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 750;
-        margin-bottom: 0.3rem;
-    }
-
-    /* ---------- Insight ---------- */
-
-    .insight {
-        background: #eef6ff;
-        border-left: 5px solid #3b82c4;
-        border-radius: 12px;
-        padding: 1.1rem 1.3rem;
-        margin: 1rem 0;
-        color: #23415f;
-        line-height: 1.65;
-    }
-
-    .warning {
-        background: #fff8e7;
-        border-left: 5px solid #e5a900;
-        border-radius: 12px;
-        padding: 1.1rem 1.3rem;
-        margin: 1rem 0;
-        color: #684d00;
-        line-height: 1.65;
-    }
-
-    .success {
-        background: #edf9f2;
-        border-left: 5px solid #35a36d;
-        border-radius: 12px;
-        padding: 1.1rem 1.3rem;
-        margin: 1rem 0;
-        color: #205c3d;
-        line-height: 1.65;
-    }
-
-    /* ---------- Footer ---------- */
-
-    .footer {
-        text-align: center;
-        color: #98a2b3;
-        border-top: 1px solid #e4eaf2;
-        margin-top: 3rem;
-        padding-top: 1.5rem;
-        line-height: 1.7;
-    }
-
-    /* ---------- Mobile ---------- */
-
-    @media (max-width: 800px) {
-
-        .hero-title {
-            font-size: 2.1rem;
-        }
-
-        .hero {
-            padding: 1.7rem;
-        }
-
-        .block-container {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-    }
+/* footer */
+.footer {
+    text-align: center;
+    color: #98a2b3;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+}
 
 </style>
 """, unsafe_allow_html=True)
 
+
 # =========================================================
-# 데이터 주소
+# 데이터
 # =========================================================
 
 DATA_URL = (
@@ -248,11 +199,8 @@ DATA_URL = (
     "bb860932644270ad1199f10d3e7670e30231bce4/data/seoul.csv"
 )
 
-# =========================================================
-# 데이터 로딩
-# =========================================================
 
-@st.cache_data(show_spinner="서울 기온 데이터를 불러오는 중...")
+@st.cache_data(show_spinner="서울 기온 데이터를 가져오는 중...")
 def load_data():
 
     df = pd.read_csv(
@@ -286,33 +234,31 @@ def load_data():
 
     annual["연도"] = annual["연도"].astype(int)
 
-    # 관측일수가 300일 이상인 연도만 사용
+    # 1년 중 300일 이상 관측된 연도만 사용
     annual = annual[
         annual["관측일수"] >= 300
     ].copy()
 
-    annual = annual.sort_values(
+    return annual.sort_values(
         "연도"
     ).reset_index(drop=True)
-
-    return annual
 
 
 try:
     annual = load_data()
 
-except Exception as e:
+except Exception:
 
     st.error(
-        "데이터를 불러오지 못했습니다. "
-        "인터넷 연결 또는 데이터 주소를 확인해 주세요."
+        "데이터를 가져오지 못했습니다. "
+        "인터넷 연결을 확인해 주세요."
     )
 
     st.stop()
 
 
 # =========================================================
-# 데이터 조건 확인
+# 학습 / 테스트
 # =========================================================
 
 train = annual[
@@ -327,111 +273,109 @@ test = annual[
 if len(train) < 10 or len(test) < 3:
 
     st.error(
-        "훈련용 또는 테스트용 데이터가 충분하지 않습니다."
+        "분석에 필요한 연도별 데이터가 충분하지 않습니다."
     )
 
     st.stop()
 
 
 # =========================================================
-# Hero
+# 제목
 # =========================================================
 
 st.markdown(
-    f"""
-    <div class="hero">
+    '<div class="title">🌡️ 기온 예측기</div>',
+    unsafe_allow_html=True
+)
 
-        <div class="hero-badge">
-            DATA SCIENCE · REGRESSION · MODEL EVALUATION
-        </div>
+st.markdown(
+    '<div class="subtitle">'
+    '직선과 곡선을 만들어 보고, '
+    '어떤 모델이 새로운 데이터를 더 잘 맞히는지 알아봅시다.'
+    '</div>',
+    unsafe_allow_html=True
+)
 
-        <div class="hero-title">
-            🌡️ 기온 예측기
-        </div>
 
-        <div class="hero-subtitle">
-            직선 하나로 설명하던 기온의 흐름을
-            3차와 9차 곡선으로도 표현해 봅니다.
-            <br>
-            그리고 <strong>학습에 사용하지 않은 테스트 데이터</strong>로
-            어떤 모델이 더 잘 예측하는지 비교합니다.
-        </div>
+# =========================================================
+# 사용 방법
+# =========================================================
+
+st.markdown(
+    '<div class="section-title">👋 이렇게 해보세요</div>',
+    unsafe_allow_html=True
+)
+
+steps = st.columns(4)
+
+step_data = [
+    ("①", "데이터 보기", "서울 기온의 전체 흐름을 봅니다."),
+    ("②", "모델 만들기", "1차·3차·9차 곡선을 비교합니다."),
+    ("③", "점수 확인", "테스트 데이터로 모델을 평가합니다."),
+    ("④", "생각하기", "왜 모델의 성능이 다른지 생각합니다.")
+]
+
+for col, (number, title, text) in zip(
+    steps,
+    step_data
+):
+
+    with col:
+
+        st.markdown(
+            f"""
+            <div class="step">
+
+                <div class="step-number">
+                    {number}
+                </div>
+
+                <div class="step-title">
+                    {title}
+                </div>
+
+                <div class="step-text">
+                    {text}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+# =========================================================
+# 데이터 요약
+# =========================================================
+
+st.markdown(
+    '<div class="section-title">📊 먼저 데이터를 확인해 볼까요?</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <div class="look-box">
+
+    <strong>쉽게 말하면</strong><br>
+    모델에게 과거 데이터를 보여 주어 공부시키고,
+    공부할 때 보지 않았던 데이터를 이용해 실력을 시험합니다.
 
     </div>
     """,
     unsafe_allow_html=True
 )
 
+a, b, c = st.columns(3)
 
-# =========================================================
-# Sidebar
-# =========================================================
-
-with st.sidebar:
-
-    st.markdown("## ⚙️ 분석 설정")
-
-    st.markdown("### 데이터 분할")
-
-    st.info(
-        "📚 훈련용\n"
-        "2005년 이전\n\n"
-        "🧪 테스트용\n"
-        "2005년부터"
-    )
-
-    st.markdown("### 비교 모델")
-
-    st.write("🔵 **1차** — 직선")
-    st.write("🟢 **3차** — 3차 곡선")
-    st.write("🔴 **9차** — 고차 곡선")
-
-    st.divider()
-
-    st.markdown("### 평가 방법")
-
-    st.write(
-        "**MAE**\n"
-        "평균적으로 몇 ℃ 빗나갔는지 나타냅니다."
-    )
-
-    st.write(
-        "**MSE**\n"
-        "큰 오차에 더 큰 벌점을 줍니다."
-    )
-
-    st.write(
-        "**R²**\n"
-        "모델이 데이터의 변화를 얼마나 설명하는지 나타냅니다."
-    )
-
-    st.divider()
-
-    st.caption(
-        "고차 회귀 계산의 안정성을 위해 "
-        "연도는 1950년을 기준으로 변환합니다."
-    )
-
-
-# =========================================================
-# KPI
-# =========================================================
-
-st.markdown(
-    '<div class="section">📊 실험 데이터</div>',
-    unsafe_allow_html=True
-)
-
-k1, k2, k3, k4 = st.columns(4)
-
-with k1:
+with a:
 
     st.markdown(
         f"""
         <div class="card">
-            <div class="card-label">📚 훈련 데이터</div>
-            <div class="card-value">{len(train)}년</div>
-            <div class="card-sub">
+            <div class="card-label">📚 공부에 사용할 연도</div>
+            <div class="card-value">{len(train)}개</div>
+            <div class="card-help">
                 {train["연도"].min()} ~ {train["연도"].max()}
             </div>
         </div>
@@ -439,14 +383,14 @@ with k1:
         unsafe_allow_html=True
     )
 
-with k2:
+with b:
 
     st.markdown(
         f"""
         <div class="card">
-            <div class="card-label">🧪 테스트 데이터</div>
-            <div class="card-value">{len(test)}년</div>
-            <div class="card-sub">
+            <div class="card-label">📝 시험에 사용할 연도</div>
+            <div class="card-value">{len(test)}개</div>
+            <div class="card-help">
                 {test["연도"].min()} ~ {test["연도"].max()}
             </div>
         </div>
@@ -454,32 +398,15 @@ with k2:
         unsafe_allow_html=True
     )
 
-with k3:
+with c:
 
     st.markdown(
         f"""
         <div class="card">
-            <div class="card-label">📅 사용 기간</div>
-            <div class="card-value">
-                {annual["연도"].min()}~{annual["연도"].max()}
-            </div>
-            <div class="card-sub">
-                연평균 기온
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with k4:
-
-    st.markdown(
-        """
-        <div class="card">
-            <div class="card-label">🎯 평가 기준</div>
-            <div class="card-value">MAE</div>
-            <div class="card-sub">
-                작을수록 좋은 예측
+            <div class="card-label">📅 전체 연도</div>
+            <div class="card-value">{len(annual)}개</div>
+            <div class="card-help">
+                관측일수가 300일 이상인 연도
             </div>
         </div>
         """,
@@ -488,25 +415,29 @@ with k4:
 
 
 # =========================================================
-# 전체 데이터 그래프
+# 전체 기온 그래프
 # =========================================================
 
 st.markdown(
-    '<div class="section">📈 서울 연평균 기온의 흐름</div>',
+    '<div class="section-title">📈 1단계 · 서울 기온의 흐름 보기</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="section-note">'
-    "파란 영역은 모델이 학습하는 구간, "
-    "주황 영역은 학습하지 않고 평가하는 구간입니다."
-    "</div>",
+    """
+    <div class="look-box">
+
+    👀 <strong>이 그래프에서 볼 것</strong><br>
+    시간이 지나면서 연평균 기온이 어떤 방향으로 움직이는지 살펴보세요.
+    그리고 2005년을 기준으로 공부할 데이터와 시험할 데이터를 나눕니다.
+
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 fig = go.Figure()
 
-# 전체 데이터
 fig.add_trace(
     go.Scatter(
         x=annual["연도"],
@@ -518,11 +449,11 @@ fig.add_trace(
     )
 )
 
-# 훈련 영역
+# 학습 영역
 fig.add_vrect(
     x0=train["연도"].min(),
     x1=train["연도"].max(),
-    fillcolor="rgba(59,130,196,0.08)",
+    fillcolor="rgba(59,130,246,0.08)",
     line_width=0
 )
 
@@ -530,15 +461,14 @@ fig.add_vrect(
 fig.add_vrect(
     x0=test["연도"].min(),
     x1=test["연도"].max(),
-    fillcolor="rgba(245,158,11,0.08)",
+    fillcolor="rgba(245,158,11,0.10)",
     line_width=0
 )
 
 fig.add_vline(
     x=2005,
     line_dash="dash",
-    line_width=2,
-    annotation_text="2005 · 학습 → 테스트",
+    annotation_text="2005년부터 시험",
     annotation_position="top"
 )
 
@@ -552,13 +482,6 @@ fig.update_layout(
         r=20,
         t=35,
         b=20
-    ),
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="left",
-        x=0
     )
 )
 
@@ -569,7 +492,7 @@ st.plotly_chart(
 
 
 # =========================================================
-# 모델 계산
+# 모델
 # =========================================================
 
 BASE_YEAR = 1950
@@ -595,7 +518,7 @@ X_test = transform_year(
 y_test = test["평균기온"].values
 
 
-def build_model(degree):
+def make_model(degree):
 
     coefficients = np.polyfit(
         X_train,
@@ -603,12 +526,12 @@ def build_model(degree):
         degree
     )
 
-    train_prediction = np.polyval(
+    train_pred = np.polyval(
         coefficients,
         X_train
     )
 
-    test_prediction = np.polyval(
+    test_pred = np.polyval(
         coefficients,
         X_test
     )
@@ -620,134 +543,123 @@ def build_model(degree):
 
     return {
         "coefficients": coefficients,
-        "train_prediction": train_prediction,
-        "test_prediction": test_prediction,
+        "train_pred": train_pred,
+        "test_pred": test_pred,
         "train_mae": mean_absolute_error(
             y_train,
-            train_prediction
+            train_pred
         ),
         "test_mae": mean_absolute_error(
             y_test,
-            test_prediction
+            test_pred
         ),
         "test_mse": mean_squared_error(
             y_test,
-            test_prediction
+            test_pred
         ),
         "test_r2": r2_score(
             y_test,
-            test_prediction
+            test_pred
         ),
         "prediction_2050": prediction_2050
     }
 
 
-models = {}
-
-for degree in [1, 3, 9]:
-
-    models[degree] = build_model(
-        degree
-    )
+models = {
+    1: make_model(1),
+    3: make_model(3),
+    9: make_model(9)
+}
 
 
 # =========================================================
-# 결과
+# 모델 비교
 # =========================================================
-
-rows = []
-
-for degree in [1, 3, 9]:
-
-    model = models[degree]
-
-    rows.append({
-        "모델": f"{degree}차",
-        "훈련 MAE (℃)": model["train_mae"],
-        "테스트 MAE (℃)": model["test_mae"],
-        "테스트 MSE": model["test_mse"],
-        "테스트 R²": model["test_r2"],
-        "2050년 예측 (℃)": model["prediction_2050"]
-    })
-
-
-results = pd.DataFrame(rows)
 
 best_degree = min(
-    [1, 3, 9],
+    models,
     key=lambda degree:
         models[degree]["test_mae"]
 )
 
-best_model = models[best_degree]
-
-
-# =========================================================
-# 모델 카드
-# =========================================================
 
 st.markdown(
-    '<div class="section">🏆 세 모델의 성능</div>',
+    '<div class="section-title">📐 2단계 · 세 가지 모델 비교하기</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="section-note">'
-    "테스트 MAE가 작을수록 처음 보는 데이터를 더 정확하게 예측한 것입니다."
-    "</div>",
+    """
+    <div class="look-box">
+
+    <strong>차수란?</strong><br>
+    차수가 높아질수록 더 복잡한 모양의 곡선을 만들 수 있습니다.
+
+    <br><br>
+
+    🔵 <strong>1차</strong> = 직선<br>
+    🟢 <strong>3차</strong> = 조금 더 복잡한 곡선<br>
+    🔴 <strong>9차</strong> = 매우 복잡한 곡선
+
+    </div>
+    """,
     unsafe_allow_html=True
 )
+
 
 model_columns = st.columns(3)
 
-model_info = {
-    1: ("🔵", "직선", "#3b82c4"),
-    3: ("🟢", "3차 곡선", "#35a36d"),
-    9: ("🔴", "9차 곡선", "#d95c5c")
+model_names = {
+    1: "직선",
+    3: "3차 곡선",
+    9: "9차 곡선"
 }
 
-for column, degree in zip(
+model_icons = {
+    1: "🔵",
+    3: "🟢",
+    9: "🔴"
+}
+
+
+for col, degree in zip(
     model_columns,
     [1, 3, 9]
 ):
 
-    icon, name, color = model_info[degree]
     model = models[degree]
 
     is_best = degree == best_degree
 
-    best_html = (
-        '<div class="best-label">🏆 테스트 성능 1위</div>'
+    badge = (
+        '<div class="badge">🏆 테스트 점수 1위</div>'
         if is_best else ""
     )
 
-    with column:
+    with col:
 
         st.markdown(
             f"""
-            <div class="model-card {'best' if is_best else ''}">
+            <div class="model {'model-best' if is_best else ''}">
 
-                {best_html}
+                {badge}
 
-                <div class="model-tag">
-                    {icon} {degree}차
+                <div class="model-name">
+                    {model_icons[degree]}
+                    {degree}차 · {model_names[degree]}
                 </div>
 
-                <div class="model-title">
-                    {name}
-                </div>
-
-                <div class="card-label">
-                    테스트 MAE
+                <div class="model-description">
+                    테스트에서 평균
                 </div>
 
                 <div class="model-number">
-                    {model["test_mae"]:.3f}
+                    {model["test_mae"]:.2f}
                     <span class="model-unit">℃</span>
                 </div>
 
-                <div class="card-sub">
-                    훈련 MAE {model["train_mae"]:.3f}℃
+                <div class="model-description">
+                    만큼 빗나감
                 </div>
 
             </div>
@@ -757,224 +669,218 @@ for column, degree in zip(
 
 
 # =========================================================
-# 핵심 해석
+# 회귀 그래프
 # =========================================================
 
 st.markdown(
-    f"""
-    <div class="success">
-        <strong>🏆 현재 데이터에서 가장 작은 테스트 MAE:</strong>
-        {best_degree}차 모델
-        ({best_model["test_mae"]:.3f}℃)
-        <br><br>
-        단, 이것은 <strong>이번 테스트 데이터에서의 결과</strong>입니다.
-        차수가 높다고 항상 더 좋은 모델이라고 일반화할 수는 없습니다.
+    '<div class="section-title">👀 세 곡선을 직접 비교해 봅시다</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <div class="look-box">
+
+    <strong>그래프를 클릭하거나 마우스를 올려 보세요.</strong><br>
+    실제 기온과 각 모델의 곡선이 얼마나 가까운지 비교해 보세요.
+
     </div>
     """,
     unsafe_allow_html=True
 )
 
 
-# =========================================================
-# 그래프 탭
-# =========================================================
+curve_years = np.linspace(
+    annual["연도"].min(),
+    2050,
+    800
+)
 
-tab_curve, tab_error, tab_future = st.tabs(
-    [
-        "📈 회귀곡선",
-        "📉 오차 비교",
-        "🔮 2050년"
-    ]
+curve_x = transform_year(
+    curve_years
+)
+
+curve_fig = go.Figure()
+
+curve_fig.add_trace(
+    go.Scatter(
+        x=train["연도"],
+        y=train["평균기온"],
+        mode="markers",
+        name="공부 데이터",
+        marker=dict(size=6)
+    )
+)
+
+curve_fig.add_trace(
+    go.Scatter(
+        x=test["연도"],
+        y=test["평균기온"],
+        mode="markers",
+        name="시험 데이터",
+        marker=dict(
+            size=7,
+            symbol="diamond"
+        )
+    )
+)
+
+for degree in [1, 3, 9]:
+
+    curve_y = np.polyval(
+        models[degree]["coefficients"],
+        curve_x
+    )
+
+    curve_fig.add_trace(
+        go.Scatter(
+            x=curve_years,
+            y=curve_y,
+            mode="lines",
+            name=f"{degree}차"
+        )
+    )
+
+curve_fig.add_vline(
+    x=2005,
+    line_dash="dash",
+    annotation_text="시험 시작"
+)
+
+curve_fig.add_vline(
+    x=2050,
+    line_dash="dot",
+    annotation_text="2050"
+)
+
+curve_fig.update_layout(
+    height=600,
+    xaxis_title="연도",
+    yaxis_title="연평균 기온 (℃)",
+    hovermode="x unified"
+)
+
+st.plotly_chart(
+    curve_fig,
+    use_container_width=True
 )
 
 
 # =========================================================
-# 회귀곡선
+# 점수
 # =========================================================
 
-with tab_curve:
+st.markdown(
+    '<div class="section-title">🏆 3단계 · 모델의 시험 점수 확인</div>',
+    unsafe_allow_html=True
+)
 
-    st.subheader("1차 · 3차 · 9차 회귀곡선")
+st.markdown(
+    """
+    <div class="look-box">
 
-    curve_years = np.linspace(
-        annual["연도"].min(),
-        2050,
-        800
+    <strong>MAE란?</strong><br>
+    모델의 예측이 실제 기온에서 평균적으로 몇 ℃ 떨어져 있는지 나타내는 값입니다.<br>
+    <strong>작을수록 더 잘 맞힌 것입니다.</strong>
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+result_rows = []
+
+for degree in [1, 3, 9]:
+
+    m = models[degree]
+
+    result_rows.append({
+        "모델": f"{degree}차",
+        "훈련 MAE (℃)": m["train_mae"],
+        "테스트 MAE (℃)": m["test_mae"],
+        "테스트 MSE": m["test_mse"],
+        "테스트 R²": m["test_r2"]
+    })
+
+
+results = pd.DataFrame(
+    result_rows
+)
+
+
+error_fig = go.Figure()
+
+error_fig.add_trace(
+    go.Bar(
+        x=results["모델"],
+        y=results["훈련 MAE (℃)"],
+        name="공부할 때 오차",
+        text=[
+            f"{x:.2f}℃"
+            for x in results["훈련 MAE (℃)"]
+        ],
+        textposition="auto"
     )
+)
 
-    curve_x = transform_year(
-        curve_years
+error_fig.add_trace(
+    go.Bar(
+        x=results["모델"],
+        y=results["테스트 MAE (℃)"],
+        name="시험에서 오차",
+        text=[
+            f"{x:.2f}℃"
+            for x in results["테스트 MAE (℃)"]
+        ],
+        textposition="auto"
     )
+)
 
-    curve_fig = go.Figure()
+error_fig.update_layout(
+    barmode="group",
+    height=460,
+    xaxis_title="모델",
+    yaxis_title="평균 오차 (℃)",
+    hovermode="x unified"
+)
 
-    # 훈련 데이터
-    curve_fig.add_trace(
-        go.Scatter(
-            x=train["연도"],
-            y=train["평균기온"],
-            mode="markers",
-            name="훈련 데이터",
-            marker=dict(
-                size=6
-            )
-        )
-    )
+st.plotly_chart(
+    error_fig,
+    use_container_width=True
+)
 
-    # 테스트 데이터
-    curve_fig.add_trace(
-        go.Scatter(
-            x=test["연도"],
-            y=test["평균기온"],
-            mode="markers",
-            name="테스트 데이터",
-            marker=dict(
-                size=7,
-                symbol="diamond"
-            )
-        )
-    )
 
-    # 모델 곡선
-    for degree in [1, 3, 9]:
-
-        y_curve = np.polyval(
-            models[degree]["coefficients"],
-            curve_x
-        )
-
-        curve_fig.add_trace(
-            go.Scatter(
-                x=curve_years,
-                y=y_curve,
-                mode="lines",
-                name=f"{degree}차 모델",
-                line=dict(width=3)
-            )
-        )
-
-    # 학습 / 테스트 경계
-    curve_fig.add_vline(
-        x=2005,
-        line_dash="dash",
-        line_width=2,
-        annotation_text="테스트 시작"
-    )
-
-    # 2050
-    curve_fig.add_vline(
-        x=2050,
-        line_dash="dot",
-        annotation_text="2050"
-    )
-
-    curve_fig.update_layout(
-        height=600,
-        xaxis_title="연도",
-        yaxis_title="연평균 기온 (℃)",
-        hovermode="x unified"
-    )
-
-    st.plotly_chart(
-        curve_fig,
-        use_container_width=True
-    )
-
-    st.markdown(
-        """
-        <div class="insight">
-            <strong>💡 그래프에서 찾아보기</strong><br>
-            ① 세 곡선은 훈련 데이터에서 얼마나 비슷한가?<br>
-            ② 테스트 구간에서는 어떤 곡선이 실제 데이터에 가까운가?<br>
-            ③ 2050년으로 갈수록 세 곡선은 어떻게 달라지는가?
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+st.success(
+    f"🎉 이번 테스트에서는 **{best_degree}차 모델**이 "
+    f"가장 작은 테스트 오차를 보였습니다. "
+    f"평균적으로 약 **{models[best_degree]['test_mae']:.2f}℃** "
+    f"차이가 났습니다."
+)
 
 
 # =========================================================
-# 오차 비교
+# 결과표
 # =========================================================
 
-with tab_error:
+with st.expander("📋 숫자로 자세히 보기"):
 
-    st.subheader("훈련 데이터와 테스트 데이터의 오차")
+    display_results = results.copy()
 
-    error_fig = go.Figure()
+    display_results["훈련 MAE (℃)"] = \
+        display_results["훈련 MAE (℃)"].round(3)
 
-    error_fig.add_trace(
-        go.Bar(
-            x=results["모델"],
-            y=results["훈련 MAE (℃)"],
-            name="훈련 MAE",
-            text=[
-                f"{x:.3f}"
-                for x in results["훈련 MAE (℃)"]
-            ],
-            textposition="auto"
-        )
-    )
+    display_results["테스트 MAE (℃)"] = \
+        display_results["테스트 MAE (℃)"].round(3)
 
-    error_fig.add_trace(
-        go.Bar(
-            x=results["모델"],
-            y=results["테스트 MAE (℃)"],
-            name="테스트 MAE",
-            text=[
-                f"{x:.3f}"
-                for x in results["테스트 MAE (℃)"]
-            ],
-            textposition="auto"
-        )
-    )
+    display_results["테스트 MSE"] = \
+        display_results["테스트 MSE"].round(3)
 
-    error_fig.update_layout(
-        barmode="group",
-        height=500,
-        xaxis_title="모델",
-        yaxis_title="MAE (℃)",
-        hovermode="x unified"
-    )
-
-    st.plotly_chart(
-        error_fig,
-        use_container_width=True
-    )
-
-    st.markdown(
-        """
-        <div class="insight">
-            <strong>🧠 핵심 개념 — 과대적합</strong><br><br>
-            훈련 데이터에 지나치게 맞추어진 모델은
-            새로운 테스트 데이터에서 오히려 성능이 떨어질 수 있습니다.
-            이를 <strong>과대적합(overfitting)</strong>이라고 합니다.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.subheader("상세 평가표")
-
-    formatted_results = results.copy()
-
-    formatted_results["훈련 MAE (℃)"] = \
-        formatted_results["훈련 MAE (℃)"].round(3)
-
-    formatted_results["테스트 MAE (℃)"] = \
-        formatted_results["테스트 MAE (℃)"].round(3)
-
-    formatted_results["테스트 MSE"] = \
-        formatted_results["테스트 MSE"].round(3)
-
-    formatted_results["테스트 R²"] = \
-        formatted_results["테스트 R²"].round(3)
-
-    formatted_results["2050년 예측 (℃)"] = \
-        formatted_results["2050년 예측 (℃)"].round(1)
+    display_results["테스트 R²"] = \
+        display_results["테스트 R²"].round(3)
 
     st.dataframe(
-        formatted_results,
+        display_results,
         use_container_width=True,
         hide_index=True
     )
@@ -984,109 +890,66 @@ with tab_error:
 # 2050
 # =========================================================
 
-with tab_future:
+st.markdown(
+    '<div class="section-title">🔮 4단계 · 2050년 값을 계산해 보기</div>',
+    unsafe_allow_html=True
+)
 
-    st.subheader("2050년 예측 비교")
+st.markdown(
+    """
+    <div class="warning-box">
 
-    future_columns = st.columns(3)
+    ⚠️ <strong>중요!</strong><br><br>
 
-    for column, degree in zip(
-        future_columns,
-        [1, 3, 9]
-    ):
+    2050년은 모델이 공부한 범위보다 훨씬 뒤에 있습니다.
+    따라서 아래 숫자는 실제 기후 예보가 아닙니다.
 
-        prediction = \
-            models[degree]["prediction_2050"]
+    <br><br>
 
-        icon, name, _ = model_info[degree]
+    <strong>
+    "지금 만든 수학식을 2050년까지 그대로 이어 붙이면
+    어떤 숫자가 나오는가?"
+    </strong>
 
-        with column:
+    를 알아보는 활동입니다.
 
-            st.markdown(
-                f"""
-                <div class="model-card">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-                    <div class="model-tag">
-                        {icon} {degree}차 모델
-                    </div>
 
-                    <div class="model-title">
-                        {name}
-                    </div>
+future_columns = st.columns(3)
 
-                    <div class="model-number">
-                        {prediction:.1f}
-                        <span class="model-unit">℃</span>
-                    </div>
+for col, degree in zip(
+    future_columns,
+    [1, 3, 9]
+):
 
-                    <div class="card-sub">
-                        2050년 모델 계산값
-                    </div>
+    with col:
 
+        st.markdown(
+            f"""
+            <div class="model">
+
+                <div class="model-name">
+                    {model_icons[degree]}
+                    {degree}차
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
 
-    st.markdown(
-        """
-        <div class="warning">
+                <div class="model-number">
+                    {models[degree]["prediction_2050"]:.1f}
+                    <span class="model-unit">℃</span>
+                </div>
 
-            <strong>⚠️ 2050년 예측을 실제 기후 예보로 해석하면 안 됩니다.</strong>
+                <div class="model-description">
+                    2050년 모델 계산값
+                </div>
 
-            <br><br>
-
-            이번 모델은 2005년 이전의 데이터만 사용해 학습했습니다.
-            따라서 2050년 값은 모델이 학습한 범위를 넘어 계산한
-            <strong>외삽(extrapolation)</strong>입니다.
-
-            <br><br>
-
-            특히 고차 다항식은 학습 범위 밖에서
-            곡선이 크게 변할 수 있기 때문에 주의해야 합니다.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    future_df = pd.DataFrame({
-        "모델": [
-            "1차",
-            "3차",
-            "9차"
-        ],
-        "2050년 예측": [
-            models[1]["prediction_2050"],
-            models[3]["prediction_2050"],
-            models[9]["prediction_2050"]
-        ]
-    })
-
-    future_fig = go.Figure()
-
-    future_fig.add_trace(
-        go.Bar(
-            x=future_df["모델"],
-            y=future_df["2050년 예측"],
-            text=[
-                f"{x:.1f}℃"
-                for x in future_df["2050년 예측"]
-            ],
-            textposition="auto"
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-    )
-
-    future_fig.update_layout(
-        height=420,
-        xaxis_title="모델",
-        yaxis_title="2050년 예측 기온 (℃)"
-    )
-
-    st.plotly_chart(
-        future_fig,
-        use_container_width=True
-    )
 
 
 # =========================================================
@@ -1094,170 +957,90 @@ with tab_future:
 # =========================================================
 
 st.markdown(
-    '<div class="section">🧠 탐구 활동</div>',
+    '<div class="section-title">🧠 마지막으로 생각해 보기</div>',
     unsafe_allow_html=True
 )
 
-q1, q2 = st.columns(2)
 
-with q1:
+with st.expander("💭 질문 1 · 어떤 곡선이 공부 데이터에 가장 가까웠나요?"):
 
-    with st.expander(
-        "① 훈련 데이터에 가장 잘 맞는 모델은?"
-    ):
+    train_best = min(
+        models,
+        key=lambda d:
+            models[d]["train_mae"]
+    )
 
-        train_best = min(
-            [1, 3, 9],
-            key=lambda d:
-                models[d]["train_mae"]
-        )
-
-        st.write(
-            f"현재 데이터에서는 **{train_best}차 모델**의 "
-            f"훈련 MAE가 가장 작습니다."
-        )
-
-with q2:
-
-    with st.expander(
-        "② 테스트 데이터를 가장 잘 예측한 모델은?"
-    ):
-
-        st.write(
-            f"현재 데이터에서는 **{best_degree}차 모델**의 "
-            f"테스트 MAE가 가장 작습니다."
-        )
+    st.write(
+        f"이번 데이터에서는 **{train_best}차 모델**의 "
+        f"훈련 MAE가 가장 작습니다."
+    )
 
 
-q3, q4 = st.columns(2)
+with st.expander("💭 질문 2 · 공부를 잘한 모델이 시험도 잘했나요?"):
 
-with q3:
+    st.write(
+        "훈련 데이터에 가장 잘 맞는 모델과 "
+        "테스트 데이터에서 가장 좋은 모델이 "
+        "다를 수 있습니다."
+    )
 
-    with st.expander(
-        "③ 왜 훈련 성능과 테스트 성능이 다를까?"
-    ):
 
-        st.write(
-            "훈련 데이터에 지나치게 맞추어진 모델은 "
-            "새로운 데이터에서 오차가 커질 수 있습니다. "
-            "이 현상을 과대적합이라고 합니다."
-        )
+with st.expander("💭 질문 3 · 이런 현상을 무엇이라고 할까요?"):
 
-with q4:
+    st.write(
+        "**과대적합(overfitting)**이라고 합니다. "
+        "모델이 공부 데이터에 지나치게 맞춰져 "
+        "새로운 데이터에서는 성능이 떨어지는 현상입니다."
+    )
 
-    with st.expander(
-        "④ 2050년 값을 실제 예보라고 할 수 있을까?"
-    ):
 
-        st.write(
-            "아닙니다. 2050년은 학습 범위 밖이므로 "
-            "모델의 외삽 결과로 보아야 합니다."
-        )
+with st.expander("💭 질문 4 · 2050년 값을 실제 기온 예보로 사용할 수 있을까요?"):
+
+    st.write(
+        "아니요. 이번 2050년 값은 학습 범위 밖에서 "
+        "계산한 **외삽 결과**입니다. "
+        "실제 기후 예보와는 다릅니다."
+    )
 
 
 # =========================================================
 # 데이터 보기
 # =========================================================
 
-with st.expander("📋 연도별 원본 분석 데이터 보기"):
+with st.expander("📋 연도별 데이터 직접 보기"):
 
-    display_df = annual.copy()
+    table = annual.copy()
 
-    display_df.columns = [
+    table.columns = [
         "연도",
         "연평균 기온 (℃)",
         "관측일수"
     ]
 
     st.dataframe(
-        display_df,
+        table,
         use_container_width=True,
         hide_index=True
     )
 
 
 # =========================================================
-# 최종 요약
+# 마무리
 # =========================================================
 
 st.markdown(
-    '<div class="section">🎯 오늘의 핵심</div>',
+    """
+    <div class="look-box">
+
+    🎯 <strong>오늘의 한 줄 정리</strong><br><br>
+
+    복잡한 곡선이 데이터를 더 잘 따라갈 수는 있지만,
+    <strong>새로운 데이터를 잘 예측하는지는 따로 확인해야 합니다.</strong>
+
+    </div>
+    """,
     unsafe_allow_html=True
 )
-
-s1, s2, s3 = st.columns(3)
-
-with s1:
-
-    st.markdown(
-        """
-        <div class="card">
-
-            <div class="card-label">
-                01 · 모델 복잡성
-            </div>
-
-            <div class="card-value">
-                1 → 3 → 9
-            </div>
-
-            <div class="card-sub">
-                차수가 높아질수록 더 복잡한
-                곡선을 표현할 수 있습니다.
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with s2:
-
-    st.markdown(
-        """
-        <div class="card">
-
-            <div class="card-label">
-                02 · 공정한 평가
-            </div>
-
-            <div class="card-value">
-                Test
-            </div>
-
-            <div class="card-sub">
-                학습에 사용하지 않은 데이터로
-                모델을 평가해야 합니다.
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with s3:
-
-    st.markdown(
-        """
-        <div class="card">
-
-            <div class="card-label">
-                03 · 미래 예측
-            </div>
-
-            <div class="card-value">
-                외삽
-            </div>
-
-            <div class="card-sub">
-                학습 범위 밖의 예측은
-                특히 주의해서 해석해야 합니다.
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
 
 # =========================================================
@@ -1269,8 +1052,7 @@ st.markdown(
     <div class="footer">
         🌡️ 기온 예측기 · 데이터 과학 심화 탐구
         <br>
-        훈련 데이터에 잘 맞는 모델과
-        새로운 데이터를 잘 예측하는 모델은 같을까요?
+        송탄고등학교 · 회귀 모델과 과대적합
     </div>
     """,
     unsafe_allow_html=True
